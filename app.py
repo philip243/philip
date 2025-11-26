@@ -59,22 +59,49 @@ def upload_file():
         
         original_size = get_file_size(filepath)
         
-        # Compress image to WebP
+        # Compress image to selected format
         try:
             quality = int(request.form.get('quality', 85))
+            output_format = request.form.get('format', 'webp').upper()  # WEBP, JPEG, PNG
             
             with Image.open(filepath) as img:
-                # Change extension to .webp
+                # Determine file extension based on format
+                format_extensions = {
+                    'WEBP': '.webp',
+                    'JPEG': '.jpg',
+                    'PNG': '.png'
+                }
+                
+                ext = format_extensions.get(output_format, '.webp')
                 filename_no_ext = os.path.splitext(filename)[0]
-                processed_filename = filename_no_ext + ".webp"
+                processed_filename = filename_no_ext + ext
                 processed_filepath = os.path.join(batch_processed_dir, processed_filename)
                 
-                # Convert to RGB if necessary (e.g. for PNG with transparency, WebP supports it but good to be safe if mode is weird, though usually fine)
-                # WebP supports RGBA, so we don't strictly need to convert to RGB unless it's CMYK or something.
-                if img.mode in ('CMYK', 'P'):
-                    img = img.convert('RGB')
-                
-                img.save(processed_filepath, 'WEBP', quality=quality)
+                # Convert image mode if necessary
+                if output_format == 'JPEG':
+                    # JPEG doesn't support transparency, convert RGBA to RGB
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        # Create white background
+                        background = Image.new('RGB', img.size, (255, 255, 255))
+                        if img.mode == 'P':
+                            img = img.convert('RGBA')
+                        background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                        img = background
+                    elif img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    img.save(processed_filepath, 'JPEG', quality=quality, optimize=True)
+                    
+                elif output_format == 'PNG':
+                    # PNG supports transparency
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
+                    img.save(processed_filepath, 'PNG', optimize=True)
+                    
+                else:  # WEBP
+                    # WebP supports both RGB and RGBA
+                    if img.mode in ('CMYK', 'P'):
+                        img = img.convert('RGB')
+                    img.save(processed_filepath, 'WEBP', quality=quality)
                 
                 compressed_size = get_file_size(processed_filepath)
                 
@@ -107,7 +134,7 @@ def download_zip(batch_id):
     with zipfile.ZipFile(zip_filepath, 'w') as zipf:
         for root, dirs, files in os.walk(batch_dir):
             for file in files:
-                if file.endswith('.webp'):
+                if file.endswith(('.webp', '.jpg', '.png')):
                     zipf.write(os.path.join(root, file), file)
     
     return send_from_directory(app.config['PROCESSED_FOLDER'], zip_filename, as_attachment=True)

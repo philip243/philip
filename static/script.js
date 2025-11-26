@@ -79,9 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         processingCount.textContent = `0/${totalFiles}`;
 
+        // Get selected format
+        const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+
         for (const file of files) {
             try {
-                const data = await uploadFile(file, quality, batchId);
+                const data = await uploadFile(file, quality, batchId, selectedFormat);
                 processedCount++;
                 processingCount.textContent = `${processedCount}/${totalFiles}`;
 
@@ -112,12 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('zip-download-container').style.display = 'block';
     }
 
-    function uploadFile(file, quality, batchId) {
+    function uploadFile(file, quality, batchId, format) {
         return new Promise((resolve, reject) => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('quality', quality);
             formData.append('batch_id', batchId);
+            formData.append('format', format);
 
             fetch('/upload', {
                 method: 'POST',

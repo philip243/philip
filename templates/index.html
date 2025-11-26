@@ -45,6 +45,24 @@
                     <label for="quality-slider">Image Quality: <span id="quality-value">85</span>%</label>
                     <input type="range" id="quality-slider" min="1" max="100" value="85">
                 </div>
+
+                <div class="format-control">
+                    <label>Output Format:</label>
+                    <div class="format-options">
+                        <label class="format-option">
+                            <input type="radio" name="format" value="webp" checked>
+                            <span>WebP</span>
+                        </label>
+                        <label class="format-option">
+                            <input type="radio" name="format" value="jpeg">
+                            <span>JPG</span>
+                        </label>
+                        <label class="format-option">
+                            <input type="radio" name="format" value="png">
+                            <span>PNG</span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="loading-state" id="loading-state" style="display: none;">

@@ -138,6 +138,53 @@ input[type=range]::-webkit-slider-thumb:hover {
     background: var(--primary-hover);
 }
 
+.format-control {
+    margin-top: 20px;
+}
+
+.format-control label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.format-options {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.format-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.format-option:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+.format-option input[type="radio"] {
+    cursor: pointer;
+}
+
+.format-option input[type="radio"]:checked+span {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.format-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary-color);
+    background-color: rgba(99, 102, 241, 0.1);
+}
+
+
 /* Loading State */
 .loading-state {
     padding: 40px;
