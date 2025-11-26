@@ -1,23 +1,25 @@
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
-    const loadingState = document.getElementById('loading-state');
-    const resultArea = document.getElementById('result-area');
-    const errorMessage = document.getElementById('error-message');
-    const resetBtn = document.getElementById('reset-btn');
+    const fileList = document.getElementById('file-list');
     const qualitySlider = document.getElementById('quality-slider');
     const qualityValue = document.getElementById('quality-value');
-    const processingCount = document.getElementById('processing-count');
+    const progressText = document.getElementById('progress-text');
+    const progressFill = document.getElementById('progress-fill');
     const totalSavedDisplay = document.getElementById('total-saved');
-    const processedTotalDisplay = document.getElementById('processed-total');
-    const fileList = document.getElementById('file-list');
+    const downloadAllBtn = document.getElementById('download-all-btn');
 
-    // Quality slider update
+    let currentBatchId = null;
+    let totalFiles = 0;
+    let processedFiles = 0;
+    let totalSavedKB = 0;
+
+    // Quality slider
     qualitySlider.addEventListener('input', (e) => {
         qualityValue.textContent = e.target.value;
     });
 
-    // Drag and Drop events
+    // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
     });
@@ -28,138 +30,131 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
+        dropZone.addEventListener(eventName, () => {
+            dropZone.classList.add('dragover');
+        });
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
+        dropZone.addEventListener(eventName', () => {
+            dropZone.classList.remove('dragover');
     });
+});
 
-    function highlight(e) {
-        dropZone.classList.add('dragover');
-    }
+dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    handleFiles(files);
+});
 
-    function unhighlight(e) {
-        dropZone.classList.remove('dragover');
-    }
+fileInput.addEventListener('change', function () {
+    handleFiles(this.files);
+});
 
-    dropZone.addEventListener('drop', handleDrop, false);
+function handleFiles(files) {
+    if (files.length === 0) return;
 
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleFiles(files);
-    }
+    // Reset state
+    currentBatchId = crypto.randomUUID();
+    totalFiles = files.length;
+    processedFiles = 0;
+    totalSavedKB = 0;
+    fileList.innerHTML = '';
+    downloadAllBtn.style.display = 'none';
 
-    fileInput.addEventListener('change', function () {
-        handleFiles(this.files);
+    updateProgress();
+
+    // Get settings
+    const quality = qualitySlider.value;
+    const format = document.querySelector('input[name="format"]:checked').value;
+
+    // Process each file
+    Array.from(files).forEach((file, index) => {
+        addFileToList(file, index);
+        uploadFile(file, quality, format, currentBatchId, index);
     });
+}
 
-    function handleFiles(files) {
-        if (files.length > 0) {
-            processBatch(Array.from(files));
-        }
-    }
+function addFileToList(file, index) {
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    fileItem.id = `file-${index}`;
 
-    async function processBatch(files) {
-        // Reset UI
-        errorMessage.style.display = 'none';
-        dropZone.style.display = 'none';
-        document.querySelector('.controls-area').style.display = 'none';
-        loadingState.style.display = 'block';
-        resultArea.style.display = 'none';
-        fileList.innerHTML = '';
-        document.getElementById('zip-download-container').style.display = 'none';
-
-        let processedCount = 0;
-        let totalSavedKB = 0;
-        const totalFiles = files.length;
-        const quality = qualitySlider.value;
-        const batchId = crypto.randomUUID(); // Generate unique batch ID
-
-        processingCount.textContent = `0/${totalFiles}`;
-
-        // Get selected format
-        const selectedFormat = document.querySelector('input[name="format"]:checked').value;
-
-        for (const file of files) {
-            try {
-                const data = await uploadFile(file, quality, batchId, selectedFormat);
-                processedCount++;
-                processingCount.textContent = `${processedCount}/${totalFiles}`;
-
-                // Calculate savings
-                const original = parseFloat(data.original_size); // Assuming backend returns float now, wait, backend returns float but in JSON it was just number? Let's check app.py
-                // app.py returns float directly now: 'original_size': original_size (float)
-                const compressed = parseFloat(data.compressed_size);
-                totalSavedKB += (original - compressed);
-
-                addResultItem(data, file.name);
-            } catch (error) {
-                console.error("Error processing file:", file.name, error);
-                // Optionally show error for specific file
-            }
-        }
-
-        // Show results
-        loadingState.style.display = 'none';
-        resultArea.style.display = 'block';
-
-        const savedMB = (totalSavedKB / 1024).toFixed(2);
-        totalSavedDisplay.textContent = `${savedMB} MB`;
-        processedTotalDisplay.textContent = `${processedCount}/${totalFiles}`;
-
-        // Setup ZIP download
-        const zipBtn = document.getElementById('zip-download-btn');
-        zipBtn.href = `/download-zip/${batchId}`;
-        document.getElementById('zip-download-container').style.display = 'block';
-    }
-
-    function uploadFile(file, quality, batchId, format) {
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('quality', quality);
-            formData.append('batch_id', batchId);
-            formData.append('format', format);
-
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error('Upload failed');
-                    return response.json();
-                })
-                .then(data => resolve(data))
-                .catch(error => reject(error));
-        });
-    }
-
-    function addResultItem(data, originalName) {
-        const item = document.createElement('div');
-        item.className = 'file-item';
-
-        const originalSize = data.original_size.toFixed(2);
-        const compressedSize = data.compressed_size.toFixed(2);
-        const savings = ((1 - (data.compressed_size / data.original_size)) * 100).toFixed(0);
-
-        item.innerHTML = `
+    fileItem.innerHTML = `
+            <div class="file-icon">📄</div>
             <div class="file-info">
-                <div class="file-name" title="${originalName}">${originalName}</div>
-                <div class="file-meta">${originalSize} KB → ${compressedSize} KB (-${savings}%)</div>
+                <div class="file-name">${file.name}</div>
+                <div class="file-size" id="size-${index}">
+                    ${(file.size / 1024).toFixed(2)} KB
+                </div>
             </div>
-            <a href="${data.download_url}" class="item-download-btn" download>Download</a>
+            <div class="file-status" id="status-${index}">
+                <span class="processing-badge">⏳ Processing...</span>
+            </div>
         `;
 
-        fileList.appendChild(item);
-    }
+    fileList.appendChild(fileItem);
+}
 
-    resetBtn.addEventListener('click', () => {
-        resultArea.style.display = 'none';
-        dropZone.style.display = 'block';
-        document.querySelector('.controls-area').style.display = 'block';
-        fileInput.value = '';
-        errorMessage.style.display = 'none';
-    });
+async function uploadFile(file, quality, format, batchId, index) {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('quality', quality);
+        formData.append('format', format);
+        formData.append('batch_id', batchId);
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+        const data = await response.json();
+
+        // Update file item
+        const originalSize = data.original_size;
+        const compressedSize = data.compressed_size;
+        const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
+        const savedKB = originalSize - compressedSize;
+
+        totalSavedKB += savedKB;
+
+        document.getElementById(`size-${index}`).innerHTML = `
+                ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
+            `;
+
+        document.getElementById(`status-${index}`).innerHTML = `
+                <span class="reduction-badge">-${reduction}%</span>
+                <a href="${data.download_url}" class="file-download-btn" download>Download</a>
+            `;
+
+        processedFiles++;
+        updateProgress();
+
+        // Show download all button when all files are processed
+        if (processedFiles === totalFiles) {
+            downloadAllBtn.style.display = 'block';
+            downloadAllBtn.onclick = () => {
+                window.location.href = `/download-zip/${batchId}`;
+            };
+        }
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        document.getElementById(`status-${index}`).innerHTML = `
+                <span style="color: #ef4444;">❌ Error</span>
+            `;
+        processedFiles++;
+        updateProgress();
+    }
+}
+
+function updateProgress() {
+    progressText.textContent = `${processedFiles} / ${totalFiles}`;
+    const percentage = totalFiles > 0 ? (processedFiles / totalFiles) * 100 : 0;
+    progressFill.style.width = `${percentage}%`;
+
+    const savedMB = (totalSavedKB / 1024).toFixed(2);
+    totalSavedDisplay.textContent = `${savedMB} MB`;
+}
 });
