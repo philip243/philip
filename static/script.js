@@ -36,50 +36,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName', () => {
+        dropZone.addEventListener(eventName, () => {
             dropZone.classList.remove('dragover');
+        });
     });
-});
 
-dropZone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    handleFiles(files);
-});
-
-fileInput.addEventListener('change', function () {
-    handleFiles(this.files);
-});
-
-function handleFiles(files) {
-    if (files.length === 0) return;
-
-    // Reset state
-    currentBatchId = crypto.randomUUID();
-    totalFiles = files.length;
-    processedFiles = 0;
-    totalSavedKB = 0;
-    fileList.innerHTML = '';
-    downloadAllBtn.style.display = 'none';
-
-    updateProgress();
-
-    // Get settings
-    const quality = qualitySlider.value;
-    const format = document.querySelector('input[name="format"]:checked').value;
-
-    // Process each file
-    Array.from(files).forEach((file, index) => {
-        addFileToList(file, index);
-        uploadFile(file, quality, format, currentBatchId, index);
+    dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        handleFiles(files);
     });
-}
 
-function addFileToList(file, index) {
-    const fileItem = document.createElement('div');
-    fileItem.className = 'file-item';
-    fileItem.id = `file-${index}`;
+    fileInput.addEventListener('change', function () {
+        handleFiles(this.files);
+    });
 
-    fileItem.innerHTML = `
+    function handleFiles(files) {
+        if (files.length === 0) return;
+
+        // Reset state
+        currentBatchId = crypto.randomUUID();
+        totalFiles = files.length;
+        processedFiles = 0;
+        totalSavedKB = 0;
+        fileList.innerHTML = '';
+        downloadAllBtn.style.display = 'none';
+
+        updateProgress();
+
+        // Get settings
+        const quality = qualitySlider.value;
+        const format = document.querySelector('input[name="format"]:checked').value;
+
+        // Process each file
+        Array.from(files).forEach((file, index) => {
+            addFileToList(file, index);
+            uploadFile(file, quality, format, currentBatchId, index);
+        });
+    }
+
+    function addFileToList(file, index) {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.id = `file-${index}`;
+
+        fileItem.innerHTML = `
             <div class="file-icon">📄</div>
             <div class="file-info">
                 <div class="file-name">${file.name}</div>
@@ -92,69 +92,69 @@ function addFileToList(file, index) {
             </div>
         `;
 
-    fileList.appendChild(fileItem);
-}
+        fileList.appendChild(fileItem);
+    }
 
-async function uploadFile(file, quality, format, batchId, index) {
-    try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('quality', quality);
-        formData.append('format', format);
-        formData.append('batch_id', batchId);
+    async function uploadFile(file, quality, format, batchId, index) {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('quality', quality);
+            formData.append('format', format);
+            formData.append('batch_id', batchId);
 
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
-        });
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
 
-        if (!response.ok) throw new Error('Upload failed');
-        const data = await response.json();
+            if (!response.ok) throw new Error('Upload failed');
+            const data = await response.json();
 
-        // Update file item
-        const originalSize = data.original_size;
-        const compressedSize = data.compressed_size;
-        const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
-        const savedKB = originalSize - compressedSize;
+            // Update file item
+            const originalSize = data.original_size;
+            const compressedSize = data.compressed_size;
+            const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
+            const savedKB = originalSize - compressedSize;
 
-        totalSavedKB += savedKB;
+            totalSavedKB += savedKB;
 
-        document.getElementById(`size-${index}`).innerHTML = `
+            document.getElementById(`size-${index}`).innerHTML = `
                 ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
             `;
 
-        document.getElementById(`status-${index}`).innerHTML = `
+            document.getElementById(`status-${index}`).innerHTML = `
                 <span class="reduction-badge">-${reduction}%</span>
                 <a href="${data.download_url}" class="file-download-btn" download>Download</a>
             `;
 
-        processedFiles++;
-        updateProgress();
+            processedFiles++;
+            updateProgress();
 
-        // Show download all button when all files are processed
-        if (processedFiles === totalFiles) {
-            downloadAllBtn.style.display = 'block';
-            downloadAllBtn.onclick = () => {
-                window.location.href = `/download-zip/${batchId}`;
-            };
-        }
+            // Show download all button when all files are processed
+            if (processedFiles === totalFiles) {
+                downloadAllBtn.style.display = 'block';
+                downloadAllBtn.onclick = () => {
+                    window.location.href = `/download-zip/${batchId}`;
+                };
+            }
 
-    } catch (error) {
-        console.error('Upload error:', error);
-        document.getElementById(`status-${index}`).innerHTML = `
+        } catch (error) {
+            console.error('Upload error:', error);
+            document.getElementById(`status-${index}`).innerHTML = `
                 <span style="color: #ef4444;">❌ Error</span>
             `;
-        processedFiles++;
-        updateProgress();
+            processedFiles++;
+            updateProgress();
+        }
     }
-}
 
-function updateProgress() {
-    progressText.textContent = `${processedFiles} / ${totalFiles}`;
-    const percentage = totalFiles > 0 ? (processedFiles / totalFiles) * 100 : 0;
-    progressFill.style.width = `${percentage}%`;
+    function updateProgress() {
+        progressText.textContent = `${processedFiles} / ${totalFiles}`;
+        const percentage = totalFiles > 0 ? (processedFiles / totalFiles) * 100 : 0;
+        progressFill.style.width = `${percentage}%`;
 
-    const savedMB = (totalSavedKB / 1024).toFixed(2);
-    totalSavedDisplay.textContent = `${savedMB} MB`;
-}
+        const savedMB = (totalSavedKB / 1024).toFixed(2);
+        totalSavedDisplay.textContent = `${savedMB} MB`;
+    }
 });
