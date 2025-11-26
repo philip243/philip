@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visually Lossless Image Compressor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Image Compressor</h1>
+            <p>Reduce file size without losing quality</p>
+        </header>
+
+        <main>
+            <div class="upload-area" id="drop-zone">
+                <div class="icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16L12 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M9 11L12 8L15 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M8 16H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path
+                            d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h3>Drag & Drop your image here</h3>
+                <p>or</p>
+                <label for="file-input" class="browse-btn">Browse Files</label>
+                <input type="file" id="file-input" accept=".jpg,.jpeg,.png" hidden>
+                <p class="support-text">Supports JPG, PNG</p>
+            </div>
+
+            <div class="controls-area">
+                <div class="quality-control">
+                    <label for="quality-slider">Image Quality: <span id="quality-value">85</span>%</label>
+                    <input type="range" id="quality-slider" min="1" max="100" value="85">
+                </div>
+            </div>
+
+            <div class="loading-state" id="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Compressing <span id="processing-count">0/0</span> images...</p>
+            </div>
+
+            <div class="result-area" id="result-area" style="display: none;">
+                <div class="success-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 6L9 17L4 12" stroke="#4CAF50" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h2>Compression Complete!</h2>
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <span class="label">Total Saved</span>
+                        <span class="value" id="total-saved">0 MB</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Processed</span>
+                        <span class="value" id="processed-total">0/0</span>
+                    </div>
+                </div>
+
+                <div id="zip-download-container" style="display: none; margin-bottom: 20px;">
+                    <a href="#" id="zip-download-btn" class="download-btn" style="background-color: #6366f1;">Download
+                        All as ZIP</a>
+                </div>
+
+                <div id="file-list" class="file-list">
+                    <!-- Dynamic file items will be added here -->
+                </div>
+
+                <button id="reset-btn" class="reset-btn">Compress More</button>
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
