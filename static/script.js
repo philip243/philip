@@ -8,11 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressFill = document.getElementById('progress-fill');
     const totalSavedDisplay = document.getElementById('total-saved');
     const downloadAllBtn = document.getElementById('download-all-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    const fileListHeader = document.getElementById('file-list-header');
 
     let currentBatchId = null;
     let totalFiles = 0;
     let processedFiles = 0;
     let totalSavedKB = 0;
+    let fileData = []; // Store file data for tracking
 
     // Quality slider
     qualitySlider.addEventListener('input', (e) => {
@@ -58,8 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         totalFiles = files.length;
         processedFiles = 0;
         totalSavedKB = 0;
+        fileData = [];
         fileList.innerHTML = '';
         downloadAllBtn.style.display = 'none';
+        fileListHeader.style.display = 'flex';
 
         updateProgress();
 
@@ -117,6 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
             const savedKB = originalSize - compressedSize;
 
+            // Store file data
+            fileData.push({
+                index: index,
+                savedKB: savedKB
+            });
+
             totalSavedKB += savedKB;
 
             document.getElementById(`size-${index}`).innerHTML = `
@@ -126,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`status-${index}`).innerHTML = `
                 <span class="reduction-badge">-${reduction}%</span>
                 <a href="${data.download_url}" class="file-download-btn" download>Download</a>
+                <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
             `;
 
             processedFiles++;
@@ -157,4 +169,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedMB = (totalSavedKB / 1024).toFixed(2);
         totalSavedDisplay.textContent = `${savedMB} MB`;
     }
+
+    // Delete individual file
+    window.deleteFile = function (index, savedKB) {
+        const fileItem = document.getElementById(`file-${index}`);
+        if (fileItem) {
+            fileItem.remove();
+
+            // Update totals
+            totalSavedKB -= savedKB;
+
+            // Remove from fileData
+            fileData = fileData.filter(f => f.index !== index);
+
+            // Update display
+            const savedMB = (totalSavedKB / 1024).toFixed(2);
+            totalSavedDisplay.textContent = `${savedMB} MB`;
+
+            // Hide header if no files left
+            if (fileList.children.length === 0) {
+                fileListHeader.style.display = 'none';
+                downloadAllBtn.style.display = 'none';
+                processedFiles = 0;
+                totalFiles = 0;
+                updateProgress();
+            }
+        }
+    };
+
+    // Clear all files
+    clearAllBtn.addEventListener('click', () => {
+        fileList.innerHTML = '';
+        fileData = [];
+        totalSavedKB = 0;
+        processedFiles = 0;
+        totalFiles = 0;
+        fileListHeader.style.display = 'none';
+        downloadAllBtn.style.display = 'none';
+        updateProgress();
+        totalSavedDisplay.textContent = '0 MB';
+    });
 });

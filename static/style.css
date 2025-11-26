@@ -259,6 +259,35 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 /* File List */
+.file-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.file-list-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.clear-all-btn {
+    padding: 8px 16px;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-all-btn:hover {
+    background-color: #ef4444;
+    color: white;
+}
+
 .file-list {
     display: flex;
     flex-direction: column;
@@ -351,6 +380,23 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .file-download-btn:hover {
     background-color: var(--primary-hover);
+}
+
+.file-delete-btn {
+    padding: 8px 12px;
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.file-delete-btn:hover {
+    background-color: #ef4444;
+    color: white;
 }
 
 /* Responsive */
