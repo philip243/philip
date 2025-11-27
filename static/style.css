@@ -7,10 +7,10 @@
     --sidebar-bg: #212224;
     --card-bg: #212224;
     --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-color: #334155;
+    --text-muted: #a3a3a3;
+    --border-color: #444444;
     --success-color: #92FA72;
-    --progress-bg: #334155;
+    --progress-bg: #333333;
 }
 
 * {
@@ -42,10 +42,8 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 10px;
-    background: linear-gradient(to right, #A3E635, #52B559);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #92FA72;
+    /* Removed gradient to match specific color request */
 }
 
 .app-header p {
