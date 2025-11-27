@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileItem = document.createElement('div');
         fileItem.className = 'file-item';
         fileItem.id = `file-${index}`;
+        fileItem.dataset.originalName = file.name; // Store original filename
 
         fileItem.innerHTML = `
             <div class="file-icon">📄</div>
@@ -134,9 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
             `;
 
+            // Get original filename from the file item element
+            const fileItem = document.getElementById(`file-${index}`);
+            const originalName = fileItem.dataset.originalName;
+            
+            // Get file extension from the compressed file
+            const compressedExt = data.filename.split('.').pop();
+            const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
+            const downloadFilename = originalBasename + '.' + compressedExt;
+
             document.getElementById(`status-${index}`).innerHTML = `
                 <span class="reduction-badge">-${reduction}%</span>
-                <a href="${data.download_url}" class="file-download-btn" download>Download</a>
+                <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">Download</a>
                 <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
             `;
 

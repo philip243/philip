@@ -1,15 +1,15 @@
 :root {
-    --primary-color: #7FFF00;
-    --primary-hover: #52B559;
+    --primary-color: #92FA72;
+    --primary-hover: #7FE060;
     --primary-light: #A3E635;
     --primary-dark: #3F7E44;
-    --bg-color: #0f172a;
+    --bg-color: #212224;
     --sidebar-bg: #1e293b;
     --card-bg: #1e293b;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-color: #334155;
-    --success-color: #52B559;
+    --success-color: #92FA72;
     --progress-bg: #334155;
 }
 
@@ -34,7 +34,8 @@ body {
 
 .app-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 60px;
+    padding: 40px 20px;
 }
 
 .app-header h1 {
@@ -131,7 +132,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .format-btn:hover {
     border-color: var(--primary-color);
-    background-color: rgba(127, 255, 0, 0.05);
+    background-color: rgba(146, 250, 114, 0.05);
 }
 
 .format-btn input[type="radio"] {
@@ -141,7 +142,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .format-btn:has(input[type="radio"]:checked) {
     border-color: var(--primary-color);
-    background-color: rgba(127, 255, 0, 0.1);
+    background-color: rgba(146, 250, 114, 0.1);
 }
 
 .format-btn:has(input[type="radio"]:checked) span {
@@ -222,7 +223,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .upload-zone:hover,
 .upload-zone.dragover {
     border-color: var(--primary-color);
-    background-color: rgba(127, 255, 0, 0.05);
+    background-color: rgba(146, 250, 114, 0.05);
 }
 
 .upload-zone svg {
@@ -314,7 +315,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .file-icon {
     width: 40px;
     height: 40px;
-    background-color: rgba(127, 255, 0, 0.2);
+    background-color: rgba(146, 250, 114, 0.2);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -361,7 +362,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .processing-badge {
     padding: 6px 12px;
-    background-color: rgba(127, 255, 0, 0.2);
+    background-color: rgba(146, 250, 114, 0.2);
     color: var(--primary-color);
     border-radius: 6px;
     font-size: 0.875rem;
