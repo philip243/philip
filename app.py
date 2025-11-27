@@ -32,6 +32,59 @@ def get_file_size(filepath):
 def index():
     return render_template('index.html')
 
+
+def compress_image(filepath, batch_processed_dir, filename, quality, output_format):
+    """Helper function to compress an image"""
+    try:
+        with Image.open(filepath) as img:
+            # Determine file extension based on format
+            format_extensions = {
+                'WEBP': '.webp',
+                'JPEG': '.jpg',
+                'PNG': '.png'
+            }
+            
+            ext = format_extensions.get(output_format, '.webp')
+            filename_no_ext = os.path.splitext(filename)[0]
+            processed_filename = filename_no_ext + ext
+            processed_filepath = os.path.join(batch_processed_dir, processed_filename)
+            
+            # Convert image mode if necessary
+            if output_format == 'JPEG':
+                # JPEG doesn't support transparency, convert RGBA to RGB
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    # Create white background
+                    background = Image.new('RGB', img.size, (255, 255, 255))
+                    if img.mode == 'P':
+                        img = img.convert('RGBA')
+                    background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                    img = background
+                elif img.mode != 'RGB':
+                    img = img.convert('RGB')
+                img.save(processed_filepath, 'JPEG', quality=quality, optimize=True)
+                
+            elif output_format == 'PNG':
+                # PNG supports transparency
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                img.save(processed_filepath, 'PNG', optimize=True)
+                
+            else:  # WEBP
+                # WebP supports both RGB and RGBA
+                if img.mode in ('CMYK', 'P'):
+                    img = img.convert('RGB')
+                img.save(processed_filepath, 'WEBP', quality=quality)
+            
+            compressed_size = get_file_size(processed_filepath)
+            
+            return {
+                'compressed_size': compressed_size,
+                'filename': processed_filename,
+                'filepath': processed_filepath
+            }
+    except Exception as e:
+        raise e
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -64,58 +117,51 @@ def upload_file():
             quality = int(request.form.get('quality', 85))
             output_format = request.form.get('format', 'webp').upper()  # WEBP, JPEG, PNG
             
-            with Image.open(filepath) as img:
-                # Determine file extension based on format
-                format_extensions = {
-                    'WEBP': '.webp',
-                    'JPEG': '.jpg',
-                    'PNG': '.png'
-                }
-                
-                ext = format_extensions.get(output_format, '.webp')
-                filename_no_ext = os.path.splitext(filename)[0]
-                processed_filename = filename_no_ext + ext
-                processed_filepath = os.path.join(batch_processed_dir, processed_filename)
-                
-                # Convert image mode if necessary
-                if output_format == 'JPEG':
-                    # JPEG doesn't support transparency, convert RGBA to RGB
-                    if img.mode in ('RGBA', 'LA', 'P'):
-                        # Create white background
-                        background = Image.new('RGB', img.size, (255, 255, 255))
-                        if img.mode == 'P':
-                            img = img.convert('RGBA')
-                        background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
-                        img = background
-                    elif img.mode != 'RGB':
-                        img = img.convert('RGB')
-                    img.save(processed_filepath, 'JPEG', quality=quality, optimize=True)
-                    
-                elif output_format == 'PNG':
-                    # PNG supports transparency
-                    if img.mode == 'P':
-                        img = img.convert('RGBA')
-                    img.save(processed_filepath, 'PNG', optimize=True)
-                    
-                else:  # WEBP
-                    # WebP supports both RGB and RGBA
-                    if img.mode in ('CMYK', 'P'):
-                        img = img.convert('RGB')
-                    img.save(processed_filepath, 'WEBP', quality=quality)
-                
-                compressed_size = get_file_size(processed_filepath)
-                
-                return jsonify({
-                    'original_size': original_size,
-                    'compressed_size': compressed_size,
-                    'download_url': f"/download/{batch_id}/{processed_filename}",
-                    'filename': processed_filename
-                })
+            result = compress_image(filepath, batch_processed_dir, filename, quality, output_format)
+            
+            return jsonify({
+                'original_size': original_size,
+                'compressed_size': result['compressed_size'],
+                'download_url': f"/download/{batch_id}/{result['filename']}",
+                'filename': result['filename']
+            })
                 
         except Exception as e:
             return jsonify({'error': str(e)}), 500
             
     return jsonify({'error': 'File type not allowed'}), 400
+
+@app.route('/recompress', methods=['POST'])
+def recompress_file():
+    try:
+        batch_id = request.form.get('batch_id')
+        filename = request.form.get('filename')
+        quality = int(request.form.get('quality', 85))
+        output_format = request.form.get('format', 'webp').upper()
+        
+        if not batch_id or not filename:
+            return jsonify({'error': 'Missing batch_id or filename'}), 400
+            
+        batch_upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], batch_id)
+        batch_processed_dir = os.path.join(app.config['PROCESSED_FOLDER'], batch_id)
+        filepath = os.path.join(batch_upload_dir, filename)
+        
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Original file not found'}), 404
+            
+        original_size = get_file_size(filepath)
+        
+        result = compress_image(filepath, batch_processed_dir, filename, quality, output_format)
+        
+        return jsonify({
+            'original_size': original_size,
+            'compressed_size': result['compressed_size'],
+            'download_url': f"/download/{batch_id}/{result['filename']}",
+            'filename': result['filename']
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download/<batch_id>/<filename>')
 def download_file(batch_id, filename):

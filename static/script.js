@@ -22,6 +22,22 @@ document.addEventListener('DOMContentLoaded', () => {
         qualityValue.textContent = e.target.value;
     });
 
+    qualitySlider.addEventListener('change', (e) => {
+        const quality = e.target.value;
+        const format = document.querySelector('input[name="format"]:checked').value;
+
+        // Recompress all files
+        const fileItems = document.querySelectorAll('.file-item');
+        fileItems.forEach((item, index) => {
+            const batchId = item.dataset.batchId;
+            const originalName = item.dataset.originalName;
+
+            if (batchId && originalName) {
+                recompressFile(batchId, originalName, quality, format, index);
+            }
+        });
+    });
+
     // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
@@ -84,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileItem.className = 'file-item';
         fileItem.id = `file-${index}`;
         fileItem.dataset.originalName = file.name; // Store original filename
+        fileItem.dataset.batchId = currentBatchId; // Store batch ID
 
         fileItem.innerHTML = `
             <div class="file-icon">📄</div>
@@ -99,6 +116,79 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         fileList.appendChild(fileItem);
+    }
+
+    async function recompressFile(batchId, filename, quality, format, index) {
+        try {
+            // Show processing state
+            document.getElementById(`status-${index}`).innerHTML = `
+                <span class="processing-badge">⏳ 계산 중...</span>
+            `;
+
+            const formData = new FormData();
+            formData.append('batch_id', batchId);
+            formData.append('filename', filename);
+            formData.append('quality', quality);
+            formData.append('format', format);
+
+            const response = await fetch('/recompress', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Recompression failed');
+            const data = await response.json();
+
+            updateFileItem(data, index);
+
+        } catch (error) {
+            console.error('Recompression error:', error);
+            document.getElementById(`status-${index}`).innerHTML = `
+                <span style="color: #ef4444;">❌ 오류</span>
+            `;
+        }
+    }
+
+    function updateFileItem(data, index) {
+        const originalSize = data.original_size;
+        const compressedSize = data.compressed_size;
+        const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
+        const savedKB = originalSize - compressedSize;
+
+        // Update stored data
+        const fileDataIndex = fileData.findIndex(f => f.index === index);
+        if (fileDataIndex !== -1) {
+            // Subtract old saved amount
+            totalSavedKB -= fileData[fileDataIndex].savedKB;
+            // Update with new saved amount
+            fileData[fileDataIndex].savedKB = savedKB;
+            totalSavedKB += savedKB;
+        } else {
+            // Should not happen for recompress, but safe fallback
+            fileData.push({ index, savedKB });
+            totalSavedKB += savedKB;
+        }
+
+        document.getElementById(`size-${index}`).innerHTML = `
+            ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
+        `;
+
+        // Get original filename from the file item element
+        const fileItem = document.getElementById(`file-${index}`);
+        const originalName = fileItem.dataset.originalName;
+
+        // Get file extension from the compressed file
+        const compressedExt = data.filename.split('.').pop();
+        const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
+        const downloadFilename = originalBasename + '.' + compressedExt;
+
+        document.getElementById(`status-${index}`).innerHTML = `
+            <span class="reduction-badge">-${reduction}%</span>
+            <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">다운로드</a>
+            <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
+        `;
+
+        updateProgress();
     }
 
     async function uploadFile(file, quality, format, batchId, index) {
@@ -117,38 +207,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Upload failed');
             const data = await response.json();
 
-            // Update file item
+            // Initial add to fileData
             const originalSize = data.original_size;
             const compressedSize = data.compressed_size;
-            const reduction = ((1 - (compressedSize / originalSize)) * 100).toFixed(0);
             const savedKB = originalSize - compressedSize;
 
-            // Store file data
             fileData.push({
                 index: index,
                 savedKB: savedKB
             });
-
             totalSavedKB += savedKB;
 
-            document.getElementById(`size-${index}`).innerHTML = `
-                ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
-            `;
-
-            // Get original filename from the file item element
-            const fileItem = document.getElementById(`file-${index}`);
-            const originalName = fileItem.dataset.originalName;
-
-            // Get file extension from the compressed file
-            const compressedExt = data.filename.split('.').pop();
-            const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
-            const downloadFilename = originalBasename + '.' + compressedExt;
-
-            document.getElementById(`status-${index}`).innerHTML = `
-                <span class="reduction-badge">-${reduction}%</span>
-                <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">다운로드</a>
-                <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
-            `;
+            updateFileItem(data, index);
 
             processedFiles++;
             updateProgress();
