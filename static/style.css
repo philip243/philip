@@ -1,13 +1,15 @@
 :root {
-    --primary-color: #6366f1;
-    --primary-hover: #4f46e5;
+    --primary-color: #7FFF00;
+    --primary-hover: #52B559;
+    --primary-light: #A3E635;
+    --primary-dark: #3F7E44;
     --bg-color: #0f172a;
     --sidebar-bg: #1e293b;
     --card-bg: #1e293b;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-color: #334155;
-    --success-color: #22c55e;
+    --success-color: #52B559;
     --progress-bg: #334155;
 }
 
@@ -39,7 +41,7 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 10px;
-    background: linear-gradient(to right, #818cf8, #c084fc);
+    background: linear-gradient(to right, #A3E635, #52B559);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -129,7 +131,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .format-btn:hover {
     border-color: var(--primary-color);
-    background-color: rgba(99, 102, 241, 0.05);
+    background-color: rgba(127, 255, 0, 0.05);
 }
 
 .format-btn input[type="radio"] {
@@ -139,7 +141,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .format-btn:has(input[type="radio"]:checked) {
     border-color: var(--primary-color);
-    background-color: rgba(99, 102, 241, 0.1);
+    background-color: rgba(127, 255, 0, 0.1);
 }
 
 .format-btn:has(input[type="radio"]:checked) span {
@@ -165,7 +167,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(to right, var(--primary-color), #818cf8);
+    background: linear-gradient(to right, var(--primary-color), var(--primary-hover));
     width: 0%;
     transition: width 0.3s ease;
 }
@@ -220,7 +222,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .upload-zone:hover,
 .upload-zone.dragover {
     border-color: var(--primary-color);
-    background-color: rgba(99, 102, 241, 0.05);
+    background-color: rgba(127, 255, 0, 0.05);
 }
 
 .upload-zone svg {
@@ -241,7 +243,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .browse-btn {
     display: inline-block;
     background-color: var(--primary-color);
-    color: white;
+    color: #000000;
     padding: 12px 24px;
     border-radius: 8px;
     font-weight: 500;
@@ -312,7 +314,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .file-icon {
     width: 40px;
     height: 40px;
-    background-color: rgba(99, 102, 241, 0.2);
+    background-color: rgba(127, 255, 0, 0.2);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -359,7 +361,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .processing-badge {
     padding: 6px 12px;
-    background-color: rgba(99, 102, 241, 0.2);
+    background-color: rgba(127, 255, 0, 0.2);
     color: var(--primary-color);
     border-radius: 6px;
     font-size: 0.875rem;
