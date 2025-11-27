@@ -406,6 +406,45 @@ input[type=range]::-webkit-slider-thumb:hover {
     color: white;
 }
 
+/* Compression Guide */
+.compression-guide {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 0.8rem;
+}
+
+.guide-item h4 {
+    color: var(--text-main);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.guide-item ul {
+    list-style: none;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
+.guide-item li {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.guide-item li:last-child {
+    margin-bottom: 0;
+}
+
+.guide-item li span:first-child {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .main-layout {
