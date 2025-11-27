@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="file-status" id="status-${index}">
-                <span class="processing-badge">⏳ Processing...</span>
+                <span class="processing-badge">⏳ 처리 중...</span>
             </div>
         `;
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Get original filename from the file item element
             const fileItem = document.getElementById(`file-${index}`);
             const originalName = fileItem.dataset.originalName;
-            
+
             // Get file extension from the compressed file
             const compressedExt = data.filename.split('.').pop();
             const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById(`status-${index}`).innerHTML = `
                 <span class="reduction-badge">-${reduction}%</span>
-                <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">Download</a>
+                <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">다운로드</a>
                 <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
             `;
 
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Upload error:', error);
             document.getElementById(`status-${index}`).innerHTML = `
-                <span style="color: #ef4444;">❌ Error</span>
+                <span style="color: #ef4444;">❌ 오류</span>
             `;
             processedFiles++;
             updateProgress();

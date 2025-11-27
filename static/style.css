@@ -3,9 +3,9 @@
     --primary-hover: #7FE060;
     --primary-light: #A3E635;
     --primary-dark: #3F7E44;
-    --bg-color: #212224;
-    --sidebar-bg: #1e293b;
-    --card-bg: #1e293b;
+    --bg-color: #1a1a1a;
+    --sidebar-bg: #212224;
+    --card-bg: #212224;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --border-color: #334155;
@@ -186,7 +186,7 @@ input[type=range]::-webkit-slider-thumb:hover {
     width: 100%;
     padding: 16px;
     background-color: var(--primary-color);
-    color: white;
+    color: #000000;
     border: none;
     border-radius: 10px;
     font-size: 1rem;
@@ -218,6 +218,12 @@ input[type=range]::-webkit-slider-thumb:hover {
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    /* Fill available space */
 }
 
 .upload-zone:hover,
@@ -371,7 +377,7 @@ input[type=range]::-webkit-slider-thumb:hover {
 .file-download-btn {
     padding: 8px 16px;
     background-color: var(--primary-color);
-    color: white;
+    color: #000000;
     border: none;
     border-radius: 6px;
     font-size: 0.875rem;

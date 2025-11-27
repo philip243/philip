@@ -22,7 +22,7 @@
             <!-- LEFT SIDEBAR -->
             <aside class="sidebar">
                 <div class="sidebar-section">
-                    <h3>Image Quality</h3>
+                    <h3>이미지 품질</h3>
                     <div class="quality-display">
                         <span id="quality-value">85</span>%
                     </div>
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="sidebar-section">
-                    <h3>Output Format</h3>
+                    <h3>출력 형식</h3>
                     <div class="format-buttons">
                         <label class="format-btn">
                             <input type="radio" name="format" value="jpeg" checked>
@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="sidebar-section">
-                    <h3>Progress</h3>
+                    <h3>진행 상황</h3>
                     <div class="progress-info">
                         <span id="progress-text">0 / 0</span>
                     </div>
@@ -54,12 +54,12 @@
                 </div>
 
                 <div class="sidebar-section">
-                    <h3>Total Saved</h3>
+                    <h3>절약된 용량</h3>
                     <div class="total-saved" id="total-saved">0 MB</div>
                 </div>
 
                 <button id="download-all-btn" class="download-all-btn" style="display: none;">
-                    Download All as ZIP
+                    전체 ZIP 다운로드
                 </button>
             </aside>
 
@@ -72,16 +72,16 @@
                         <path d="M8 16H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                         <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
                     </svg>
-                    <h2>Drag & Drop your images here</h2>
-                    <p>or</p>
-                    <label for="file-input" class="browse-btn">Browse Files</label>
+                    <h2>이미지를 여기에 드래그 & 드롭하세요</h2>
+                    <p>또는</p>
+                    <label for="file-input" class="browse-btn">파일 선택</label>
                     <input type="file" id="file-input" accept=".jpg,.jpeg,.png" multiple hidden>
-                    <p class="hint">Supports JPG, PNG</p>
+                    <p class="hint">JPG, PNG 지원</p>
                 </div>
 
                 <div class="file-list-header" id="file-list-header" style="display: none;">
-                    <h3>Processed Files</h3>
-                    <button id="clear-all-btn" class="clear-all-btn">🗑️ Clear All</button>
+                    <h3>처리된 파일</h3>
+                    <button id="clear-all-btn" class="clear-all-btn">🗑️ 전체 삭제</button>
                 </div>
 
                 <div class="file-list" id="file-list">
