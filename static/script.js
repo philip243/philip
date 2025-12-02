@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileItems = document.querySelectorAll('.file-item');
         fileItems.forEach((item, index) => {
             const batchId = item.dataset.batchId;
-            const originalName = item.dataset.originalName;
+            const serverFilename = item.dataset.serverFilename;
 
-            if (batchId && originalName) {
-                recompressFile(batchId, originalName, quality, format, index);
+            if (batchId && serverFilename) {
+                recompressFile(batchId, serverFilename, quality, format, index);
             }
         });
     });
@@ -235,6 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 savedKB: savedKB
             });
             totalSavedKB += savedKB;
+
+            // Store server filename for recompression
+            const fileItem = document.getElementById(`file-${index}`);
+            fileItem.dataset.serverFilename = data.server_filename;
 
             updateFileItem(data, index);
 

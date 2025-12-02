@@ -105,9 +105,10 @@ def upload_file():
         os.makedirs(batch_upload_dir, exist_ok=True)
         os.makedirs(batch_processed_dir, exist_ok=True)
 
-        # Save original
-        filename = file.filename
-        filepath = os.path.join(batch_upload_dir, filename)
+        # Save original with UUID to avoid encoding issues
+        ext = os.path.splitext(file.filename)[1]
+        server_filename = f"{uuid.uuid4().hex}{ext}"
+        filepath = os.path.join(batch_upload_dir, server_filename)
         file.save(filepath)
         
         original_size = get_file_size(filepath)
@@ -117,13 +118,14 @@ def upload_file():
             quality = int(request.form.get('quality', 85))
             output_format = request.form.get('format', 'webp').upper()  # WEBP, JPEG, PNG
             
-            result = compress_image(filepath, batch_processed_dir, filename, quality, output_format)
+            result = compress_image(filepath, batch_processed_dir, server_filename, quality, output_format)
             
             return jsonify({
                 'original_size': original_size,
                 'compressed_size': result['compressed_size'],
                 'download_url': f"/download/{batch_id}/{result['filename']}",
-                'filename': result['filename']
+                'filename': result['filename'],
+                'server_filename': server_filename
             })
                 
         except Exception as e:
