@@ -4,8 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileList = document.getElementById('file-list');
     const qualitySlider = document.getElementById('quality-slider');
     const qualityValue = document.getElementById('quality-value');
-    const scaleSlider = document.getElementById('scale-slider');
-    const scaleValue = document.getElementById('scale-value');
     const progressText = document.getElementById('progress-text');
     const progressFill = document.getElementById('progress-fill');
     const totalSavedDisplay = document.getElementById('total-saved');
@@ -26,26 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     qualitySlider.addEventListener('change', (e) => {
         const quality = e.target.value;
-        const scale = scaleSlider.value;
         const format = document.querySelector('input[name="format"]:checked').value;
 
-        triggerRecompression(quality, scale, format);
-    });
-
-    // Scale slider
-    scaleSlider.addEventListener('input', (e) => {
-        scaleValue.textContent = e.target.value;
-    });
-
-    scaleSlider.addEventListener('change', (e) => {
-        const scale = e.target.value;
-        const quality = qualitySlider.value;
-        const format = document.querySelector('input[name="format"]:checked').value;
-
-        triggerRecompression(quality, scale, format);
-    });
-
-    function triggerRecompression(quality, scale, format) {
         // Recompress all files
         const fileItems = document.querySelectorAll('.file-item');
         fileItems.forEach((item, index) => {
@@ -53,10 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const originalName = item.dataset.originalName;
 
             if (batchId && originalName) {
-                recompressFile(batchId, originalName, quality, scale, format, index);
+                recompressFile(batchId, originalName, quality, format, index);
             }
         });
-    }
+    });
 
     // Drag and drop
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -106,13 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Get settings
         const quality = qualitySlider.value;
-        const scale = scaleSlider.value;
         const format = document.querySelector('input[name="format"]:checked').value;
 
         // Process each file
         Array.from(files).forEach((file, index) => {
             addFileToList(file, index);
-            uploadFile(file, quality, scale, format, currentBatchId, index);
+            uploadFile(file, quality, format, currentBatchId, index);
         });
     }
 
@@ -139,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileList.appendChild(fileItem);
     }
 
-    async function recompressFile(batchId, filename, quality, scale, format, index) {
+    async function recompressFile(batchId, filename, quality, format, index) {
         try {
             // Show processing state
             document.getElementById(`status-${index}`).innerHTML = `
@@ -150,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('batch_id', batchId);
             formData.append('filename', filename);
             formData.append('quality', quality);
-            formData.append('scale', scale);
             formData.append('format', format);
 
             const response = await fetch('/recompress', {
@@ -213,12 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProgress();
     }
 
-    async function uploadFile(file, quality, scale, format, batchId, index) {
+    async function uploadFile(file, quality, format, batchId, index) {
         try {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('quality', quality);
-            formData.append('scale', scale);
             formData.append('format', format);
             formData.append('batch_id', batchId);
 
