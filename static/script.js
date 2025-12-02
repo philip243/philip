@@ -103,15 +103,32 @@ document.addEventListener('DOMContentLoaded', () => {
         fileItem.dataset.batchId = currentBatchId; // Store batch ID
 
         fileItem.innerHTML = `
-            <div class="file-icon">📄</div>
-            <div class="file-info">
-                <div class="file-name">${file.name}</div>
-                <div class="file-size" id="size-${index}">
-                    ${(file.size / 1024).toFixed(2)} KB
+            <div class="comparison-container">
+                <!-- Original -->
+                <div class="image-wrapper">
+                    <div class="image-label">Original</div>
+                    <div class="image-preview-box">
+                        <img src="${URL.createObjectURL(file)}" class="image-preview" alt="Original">
+                    </div>
+                    <div class="file-meta">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-size">${(file.size / 1024).toFixed(2)} KB</div>
+                    </div>
                 </div>
-            </div>
-            <div class="file-status" id="status-${index}">
-                <span class="processing-badge">⏳ 처리 중...</span>
+
+                <!-- Arrow -->
+                <div class="comparison-arrow">→</div>
+
+                <!-- Compressed (Placeholder) -->
+                <div class="image-wrapper" id="compressed-wrapper-${index}">
+                    <div class="image-label">Compressed</div>
+                    <div class="image-preview-box skeleton">
+                        <div class="loader"></div>
+                    </div>
+                    <div class="file-status" id="status-${index}">
+                        <span class="processing-badge">⏳ 처리 중...</span>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -169,23 +186,24 @@ document.addEventListener('DOMContentLoaded', () => {
             totalSavedKB += savedKB;
         }
 
-        document.getElementById(`size-${index}`).innerHTML = `
-            ${originalSize.toFixed(2)} KB <span class="arrow">→</span> ${compressedSize.toFixed(2)} KB
-        `;
+        const compressedWrapper = document.getElementById(`compressed-wrapper-${index}`);
 
-        // Get original filename from the file item element
-        const fileItem = document.getElementById(`file-${index}`);
-        const originalName = fileItem.dataset.originalName;
-
-        // Get file extension from the compressed file
-        const compressedExt = data.filename.split('.').pop();
-        const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
-        const downloadFilename = originalBasename + '.' + compressedExt;
-
-        document.getElementById(`status-${index}`).innerHTML = `
-            <span class="reduction-badge">-${reduction}%</span>
-            <a href="${data.download_url}" class="file-download-btn" download="${downloadFilename}">다운로드</a>
-            <button class="file-delete-btn" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
+        // Update Compressed View
+        compressedWrapper.innerHTML = `
+            <div class="image-label">Compressed</div>
+            <div class="image-preview-box">
+                <img src="${data.download_url}" class="image-preview" alt="Compressed">
+            </div>
+            <div class="file-meta">
+                <div class="file-size highlight">
+                    ${compressedSize.toFixed(2)} KB
+                    <span class="reduction-tag">-${reduction}%</span>
+                </div>
+                <div class="action-buttons">
+                    <a href="${data.download_url}" class="file-download-btn small" download="${downloadFilename}">다운로드</a>
+                    <button class="file-delete-btn small" onclick="deleteFile(${index}, ${savedKB})">🗑️</button>
+                </div>
+            </div>
         `;
 
         updateProgress();
@@ -232,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (error) {
+            console.error('Upload error:', error);
             console.error('Upload error:', error);
             document.getElementById(`status-${index}`).innerHTML = `
                 <span style="color: #ef4444;">❌ 오류</span>

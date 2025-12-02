@@ -163,6 +163,10 @@ def recompress_file():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/original/<batch_id>/<filename>')
+def serve_original(batch_id, filename):
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], batch_id), filename)
+
 @app.route('/download/<batch_id>/<filename>')
 def download_file(batch_id, filename):
     return send_from_directory(os.path.join(app.config['PROCESSED_FOLDER'], batch_id), filename, as_attachment=True)
