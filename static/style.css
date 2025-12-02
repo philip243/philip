@@ -78,6 +78,81 @@ body {
     margin-bottom: 12px;
 }
 
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.section-header h3 {
+    margin-bottom: 0;
+}
+
+.help-tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.help-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--text-muted);
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: help;
+    transition: all 0.2s;
+}
+
+.help-icon:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: rgba(146, 250, 114, 0.1);
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    font-weight: 400;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.help-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
 /* Quality Slider */
 .quality-display {
     font-size: 2rem;
