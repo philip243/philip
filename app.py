@@ -33,7 +33,7 @@ def index():
     return render_template('index.html')
 
 
-def compress_image(filepath, batch_processed_dir, filename, quality, output_format):
+def compress_image(filepath, batch_processed_dir, filename, quality, output_format, scale=100):
     """Helper function to compress an image"""
     try:
         with Image.open(filepath) as img:
@@ -48,6 +48,12 @@ def compress_image(filepath, batch_processed_dir, filename, quality, output_form
             filename_no_ext = os.path.splitext(filename)[0]
             processed_filename = filename_no_ext + ext
             processed_filepath = os.path.join(batch_processed_dir, processed_filename)
+            
+            # Resize image if scale is not 100%
+            if scale != 100:
+                new_width = int(img.width * (scale / 100))
+                new_height = int(img.height * (scale / 100))
+                img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
             
             # Convert image mode if necessary
             if output_format == 'JPEG':
@@ -116,8 +122,9 @@ def upload_file():
         try:
             quality = int(request.form.get('quality', 85))
             output_format = request.form.get('format', 'webp').upper()  # WEBP, JPEG, PNG
+            scale = int(request.form.get('scale', 100))
             
-            result = compress_image(filepath, batch_processed_dir, filename, quality, output_format)
+            result = compress_image(filepath, batch_processed_dir, filename, quality, output_format, scale)
             
             return jsonify({
                 'original_size': original_size,
@@ -138,6 +145,7 @@ def recompress_file():
         filename = request.form.get('filename')
         quality = int(request.form.get('quality', 85))
         output_format = request.form.get('format', 'webp').upper()
+        scale = int(request.form.get('scale', 100))
         
         if not batch_id or not filename:
             return jsonify({'error': 'Missing batch_id or filename'}), 400
@@ -151,7 +159,7 @@ def recompress_file():
             
         original_size = get_file_size(filepath)
         
-        result = compress_image(filepath, batch_processed_dir, filename, quality, output_format)
+        result = compress_image(filepath, batch_processed_dir, filename, quality, output_format, scale)
         
         return jsonify({
             'original_size': original_size,
