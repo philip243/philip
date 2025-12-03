@@ -73,7 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (files.length === 0) return;
 
         // Reset state
-        currentBatchId = crypto.randomUUID();
+        // Reset state
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            currentBatchId = crypto.randomUUID();
+        } else {
+            currentBatchId = 'batch_' + Math.random().toString(36).substr(2, 9);
+        }
         totalFiles = files.length;
         processedFiles = 0;
         totalSavedKB = 0;
@@ -222,7 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Upload failed');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Upload failed');
+            }
             const data = await response.json();
 
             // Initial add to fileData
@@ -255,9 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Upload error:', error);
-            console.error('Upload error:', error);
             document.getElementById(`status-${index}`).innerHTML = `
-                <span style="color: #ef4444;">❌ 오류</span>
+                <span style="color: #ef4444; font-size: 0.75rem;">❌ ${error.message}</span>
             `;
             processedFiles++;
             updateProgress();
