@@ -191,6 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
             totalSavedKB += savedKB;
         }
 
+        // Get original filename from the file item element
+        const fileItem = document.getElementById(`file-${index}`);
+        const originalName = fileItem.dataset.originalName;
+
+        // Get file extension from the compressed file
+        const compressedExt = data.filename.split('.').pop();
+        const originalBasename = originalName.substring(0, originalName.lastIndexOf('.'));
+        const downloadFilename = originalBasename + '.' + compressedExt;
+
         const compressedWrapper = document.getElementById(`compressed-wrapper-${index}`);
 
         // Update Compressed View
